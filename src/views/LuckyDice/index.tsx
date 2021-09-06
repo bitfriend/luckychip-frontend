@@ -12,7 +12,8 @@ import Page from 'components/layout/Page'
 import SwitchButtonGroup from 'components/SwitchButtonGroup'
 import useTheme from 'hooks/useTheme'
 import { getWbnbAddress, getDiceAddress } from 'utils/addressHelpers'
-import { useWbnbContract, useDiceContract } from 'hooks/useContract'
+import { useWbnbContract } from 'hooks/useContract'
+import { getDiceContract } from 'utils/contractHelpers'
 import useTokenBalance from 'hooks/useTokenBalance'
 import useCallWithGasPrice from 'hooks/useCallWithGasPrice'
 import { useBlock, useDice } from 'state/hooks'
@@ -194,7 +195,6 @@ const LuckyDice: React.FC = () => {
 
   const { callWithGasPrice } = useCallWithGasPrice()
   const wbnbContract = useWbnbContract()
-  const diceContract = useDiceContract()
   const { attending, paused, bankerTimeBlocks, playerTimeBlocks, currentGame, currentEpoch, intervalBlocks, claimable, currentRound, rounds, privateRounds } = useDice()
   const [bankerTimeLeft, setBankerTimeLeft] = useState<number>(null)
   const [playerTimeLeft, setPlayerTimeLeft] = useState<number>(null)
@@ -217,12 +217,16 @@ const LuckyDice: React.FC = () => {
     return `Bet Numbers: [${sideNumbers.join(', ')}]`
   }, [sideToggles])
 
+  const token = new URLSearchParams(location.search).get('token')
+  const mode = new URLSearchParams(location.search).get('mode')
+
   const handleBet = async (toggles, amount) => {
     try {
       // The token holder calls approve to set an allowance of tokens that the contract can use
       // This is from BEP20
-      await wbnbContract.approve(getDiceAddress(), ethers.constants.MaxUint256)
+      await wbnbContract.approve(getDiceAddress(token), ethers.constants.MaxUint256)
       // call betNumber of dice contract
+      const diceContract = getDiceContract(token)
       const tx = await callWithGasPrice(diceContract, 'betNumber', [toggles, ethers.utils.parseEther(amount)], {
         value: ethers.utils.parseEther('0.001'),
       })
@@ -242,7 +246,7 @@ const LuckyDice: React.FC = () => {
       onConfirm={(amount) => {
         handleBet(sideToggles, amount)
       }}
-      tokenName="WBNB"
+      tokenSymbol={token}
     />,
   )
 
@@ -257,9 +261,6 @@ const LuckyDice: React.FC = () => {
     const result = toggled.length * 100 / 6
     return parseFloat(result.toFixed(2)).toString() // remove trailing zero
   }, [sideToggles])
-
-  const coin = new URLSearchParams(location.search).get('coin')
-  const mode = new URLSearchParams(location.search).get('mode')
 
   useEffect(() => {
     if (bankerTimerRef) {
@@ -497,10 +498,10 @@ const LuckyDice: React.FC = () => {
         <Box mt="32px">
           <SwitchButtonGroup
             buttons={[{
-              url: `/lucky_dice?coin=${coin}`,
+              url: `/lucky_dice?token=${token}`,
               node: <span>Public</span>
             },{
-              url: `/lucky_dice?coin=${coin}&mode=private`,
+              url: `/lucky_dice?token=${token}&mode=private`,
               node: <span>Private</span>
             }]}
           />

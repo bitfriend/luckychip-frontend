@@ -26,12 +26,24 @@ export default {
     56: '',
     97: '0x5eAE5455707D46FCCbAa359f1214a25d370e240c', // LuckyChipReferral
   },
-  dice: {
+  'lc-dice': {
     56: '',
-    97: '0x5DBfD155c3A15aCdD322AeEBD54fC55bd257736D', // WBNBDice
+    97: '',
   },
-  diceToken: {
+  'wbnb-dice': {
     56: '',
-    97: '0xF82CD0af5ecF2e79ae560C11afC12959bB3028b6', // WBNBDiceToken
+    97: '0x5DBfD155c3A15aCdD322AeEBD54fC55bd257736D',
+  },
+  'busd-dice': {
+    56: '',
+    97: '',
+  },
+  'btcb-dice': {
+    56: '',
+    97: '',
+  },
+  'eth-dice': {
+    56: '',
+    97: '',
   },
 }

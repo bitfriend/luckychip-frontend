@@ -31,8 +31,8 @@ function convertRoundResult(roundResult: DiceRoundResult): DiceRound {
   return round
 }
 
-export const fetchDice = (account: string) => async (dispatch, getState) => {
-  const diceAddr = getDiceAddress()
+export const fetchDice = (stakingSymbol: string, account: string) => async (dispatch, getState) => {
+  const diceAddr = getDiceAddress(stakingSymbol)
   const gameCalls = [{
     address: diceAddr,
     name: 'paused'
@@ -71,7 +71,7 @@ export const fetchDice = (account: string) => async (dispatch, getState) => {
   const playerEndBlock: BigNumber = _playerEndBlock[0]
   const currentEpoch: BigNumber = _currentEpoch[0]
   const intervalBlocks: BigNumber = _intervalBlocks[0]
-  const diceContract = getDiceContract()
+  const diceContract = getDiceContract(stakingSymbol)
   const { dice } = getState()
   let prevEpoch = dice.currentEpoch
   let prevDrawnNumber = null

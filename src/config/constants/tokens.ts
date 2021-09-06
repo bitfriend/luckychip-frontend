@@ -66,11 +66,47 @@ const tokens = {
     decimals: 18,
     projectLink: 'https://www.paxos.com/lc/',
   },
-  dice: {
+  'lc-dice': {
+    symbol: 'DICE',
+    address: {
+      56: '',
+      97: '',
+    },
+    decimals: 18,
+    projectLink: 'https://www.paxos.com/dice/',
+  },
+  'wbnb-dice': {
     symbol: 'DICE',
     address: {
       56: '',
       97: '0xF82CD0af5ecF2e79ae560C11afC12959bB3028b6',
+    },
+    decimals: 18,
+    projectLink: 'https://www.paxos.com/dice/',
+  },
+  'busd-dice': {
+    symbol: 'DICE',
+    address: {
+      56: '',
+      97: '',
+    },
+    decimals: 18,
+    projectLink: 'https://www.paxos.com/dice/',
+  },
+  'btcb-dice': {
+    symbol: 'DICE',
+    address: {
+      56: '',
+      97: '',
+    },
+    decimals: 18,
+    projectLink: 'https://www.paxos.com/dice/',
+  },
+  'eth-dice': {
+    symbol: 'DICE',
+    address: {
+      56: '',
+      97: '',
     },
     decimals: 18,
     projectLink: 'https://www.paxos.com/dice/',

@@ -14,7 +14,7 @@ interface BetModalProps {
   tokenSymbol?: string
 }
 
-const BetModal: React.FC<BetModalProps> = ({ title = 'Bet Numbers', max, onConfirm, onDismiss, tokenSymbol = '' }) => {
+const AmountModal: React.FC<BetModalProps> = ({ title, max, onConfirm, onDismiss, tokenSymbol = '' }) => {
   const [amount, setAmount] = useState('')
   const [pendingTx, setPendingTx] = useState(false)
   const fullBalance = useMemo(() => {
@@ -62,4 +62,4 @@ const BetModal: React.FC<BetModalProps> = ({ title = 'Bet Numbers', max, onConfi
   )
 }
 
-export default BetModal
+export default AmountModal

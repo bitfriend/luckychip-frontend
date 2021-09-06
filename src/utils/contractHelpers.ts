@@ -4,7 +4,6 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import web3NoAccount from 'utils/web3'
 import { poolsConfig } from 'config/constants'
-import { PoolCategory } from 'config/constants/types'
 
 // Addresses
 import {
@@ -96,7 +95,7 @@ const getEthersContract = (abi: any, address: string, signer?: ethers.Signer | e
 }
 
 export const getLcContract = (signer?: ethers.Signer | ethers.providers.Provider) => {
-  return getEthersContract(WBNB.abi, getLcAddress(), signer)
+  return getEthersContract(LCToken.abi, getLcAddress(), signer)
 }
 export const getWbnbContract = (signer?: ethers.Signer | ethers.providers.Provider) => {
   return getEthersContract(WBNB.abi, getWbnbAddress(), signer)
@@ -110,9 +109,9 @@ export const getBtcbContract = (signer?: ethers.Signer | ethers.providers.Provid
 export const getEthContract = (signer?: ethers.Signer | ethers.providers.Provider) => {
   return getEthersContract(BEP20.abi, getEthAddress(), signer)
 }
-export const getDiceContract = (signer?: ethers.Signer | ethers.providers.Provider) => {
-  return getEthersContract(Dice.abi, getDiceAddress(), signer)
+export const getDiceContract = (stakingSymbol: string, signer?: ethers.Signer | ethers.providers.Provider) => {
+  return getEthersContract(Dice.abi, getDiceAddress(stakingSymbol), signer)
 }
-export const getDiceTokenContract = (signer?: ethers.Signer | ethers.providers.Provider) => {
-  return getEthersContract(DiceToken.abi, getDiceTokenAddress(), signer)
+export const getDiceTokenContract = (stakingSymbol: string, signer?: ethers.Signer | ethers.providers.Provider) => {
+  return getEthersContract(DiceToken.abi, getDiceTokenAddress(stakingSymbol), signer)
 }

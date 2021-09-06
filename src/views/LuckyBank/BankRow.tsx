@@ -12,7 +12,7 @@ const GridLayout = styled(Grid)`
 `
 
 function getIconPath(token: Token): string {
-  if (token.symbol === 'DICE') {
+  if (token.symbol === 'CAKE') {
     return `${process.env.PUBLIC_URL}/images/cake.svg`
   }
   if (token.symbol === 'LC') {

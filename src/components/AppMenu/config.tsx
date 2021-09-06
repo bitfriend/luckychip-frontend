@@ -35,23 +35,23 @@ export const links: (t: ContextApi['t']) => MenuEntry[] = (t) => [
     items: [
       {
         label: 'LC',
-        href: '/lucky_dice?coin=LC',
+        href: '/lucky_dice?token=LC',
       },
       {
         label: 'WBNB',
-        href: '/lucky_dice?coin=WBNB',
+        href: '/lucky_dice?token=WBNB',
       },
       {
         label: 'BUSD',
-        href: '/lucky_dice?coin=BUSD',
+        href: '/lucky_dice?token=BUSD',
       },
       {
         label: 'BTCB',
-        href: '/lucky_dice?coin=BTCB',
+        href: '/lucky_dice?token=BTCB',
       },
       {
         label: 'ETH',
-        href: '/lucky_dice?coin=ETH',
+        href: '/lucky_dice?token=ETH',
       },
     ],
   },

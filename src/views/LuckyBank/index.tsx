@@ -1,21 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import styled from 'styled-components'
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { useWeb3React } from '@web3-react/core'
-import { Heading, Image } from '@heswap/uikit'
+import { Heading, Image, useModal } from '@heswap/uikit'
 import { noop } from 'lodash'
 import moment from 'moment'
 import 'moment-duration-format'
 import { useBlock, useDice } from 'state/hooks'
-import { isAddress } from 'utils/addressHelpers'
+import { getAddress, getLcAddress, getWbnbAddress, getBusdAddress, getBtcbAddress, getEthAddress, getDiceAddress, getDiceTokenAddress, isAddress } from 'utils/addressHelpers'
 import { AddressZero } from '@ethersproject/constants'
 import Page from 'components/layout/Page'
 import PageHeader from 'components/PageHeader'
-import { getLcContract, getWbnbContract, getBusdContract, getBtcbContract, getEthContract } from 'utils/contractHelpers'
+import { getDiceContract, getLcContract, getWbnbContract, getBusdContract, getBtcbContract, getEthContract } from 'utils/contractHelpers'
+import { useWbnbContract } from 'hooks/useContract'
+import useCallWithGasPrice from 'hooks/useCallWithGasPrice'
+import useTokenBalance from 'hooks/useTokenBalance'
 import tokens from 'config/constants/tokens'
 import { BankRowProps } from './types'
 import BankTable from './BankTable'
+import AmountModal from './AmountModal'
 
 const Clock = styled.div`
   padding-top: 32px;
@@ -64,6 +68,23 @@ const HeaderStuff = styled.div`
   height: 136px;
 `
 
+function getStakingContract(token) {
+  switch (token) {
+    case 'LC':
+      return getLcContract()
+    case 'WBNB':
+      return getWbnbContract()
+    case 'BUSD':
+      return getBusdContract()
+    case 'BTCB':
+      return getBtcbContract()
+    case 'ETH':
+      return getEthContract()
+    default:
+      return null
+  }
+}
+
 const LuckyBank: React.FC = () => {
   const location = useLocation()
   let referrer = AddressZero
@@ -75,88 +96,220 @@ const LuckyBank: React.FC = () => {
   }
 
   const { account } = useWeb3React()
+  const { callWithGasPrice } = useCallWithGasPrice()
   const { attending, bankerTimeBlocks, playerTimeBlocks, currentGame, currentEpoch, currentRound, paused } = useDice()
   const [bankerTimeLeft, setBankerTimeLeft] = useState(null)
   const [playerTimeLeft, setPlayerTimeLeft] = useState(null)
   const bankerTimerRef = useRef(null)
   const playerTimerRef = useRef(null)
   const { currentBlock } = useBlock()
+  const { balance: lcBalance } = useTokenBalance(getLcAddress())
+  const { balance: wbnbBalance } = useTokenBalance(getWbnbAddress())
+  const { balance: busdBalance } = useTokenBalance(getBusdAddress())
+  const { balance: btcbBalance } = useTokenBalance(getBtcbAddress())
+  const { balance: ethBalance } = useTokenBalance(getEthAddress())
+  const { balance: lcDiceBalance } = useTokenBalance(getDiceTokenAddress('LC'))
+  const { balance: wbnbDiceBalance } = useTokenBalance(getDiceTokenAddress('WBNB'))
+  const { balance: busdDiceBalance } = useTokenBalance(getDiceTokenAddress('BUSD'))
+  const { balance: btcbDiceBalance } = useTokenBalance(getDiceTokenAddress('BTCB'))
+  const { balance: ethDiceBalance } = useTokenBalance(getDiceTokenAddress('ETH'))
+
+  const handleDeposit = async (stakingSymbol, amount) => {
+    try {
+      // The token holder calls approve to set an allowance of tokens that the contract can use
+      // This is from BEP20
+      const stakingContract = getStakingContract(stakingSymbol)
+      await stakingContract.approve(getDiceAddress(stakingSymbol), ethers.constants.MaxUint256)
+      // call betNumber of dice contract
+      const diceContract = getDiceContract(stakingSymbol)
+      const tx = await callWithGasPrice(diceContract, 'deposit', [ethers.utils.parseEther(amount)], {
+        value: ethers.utils.parseEther('0.001'),
+      })
+      const receipt = await tx.wait()
+      console.log(`deposit,${receipt.transactionHash}`)
+    } catch (e) {
+      console.log(`deposit failed`, e)
+    }
+  }
+
+  const handleWithdraw = async (stakingSymbol, amount) => {
+    try {
+      // The token holder calls approve to set an allowance of tokens that the contract can use
+      // This is from BEP20
+      const stakingContract = getStakingContract(stakingSymbol)
+      await stakingContract.approve(getDiceAddress(stakingSymbol), ethers.constants.MaxUint256)
+      // call betNumber of dice contract
+      const diceContract = getDiceContract(stakingSymbol)
+      const tx = await callWithGasPrice(diceContract, 'withdraw', [ethers.utils.parseEther(amount)], {
+        value: ethers.utils.parseEther('0.001'),
+      })
+      const receipt = await tx.wait()
+      console.log(`deposit,${receipt.transactionHash}`)
+    } catch (e) {
+      console.log(`deposit failed`, e)
+    }
+  }
+
+  const [onPresentDepositFromLC] = useModal(
+    <AmountModal
+      title="Deposit from LC"
+      max={lcBalance}
+      onConfirm={(amount) => {
+        handleDeposit('LC', amount)
+      }}
+      tokenSymbol="LC"
+    />,
+  )
+
+  const [onPresentWithdrawToLC] = useModal(
+    <AmountModal
+      title="Withdraw to LC"
+      max={lcDiceBalance}
+      onConfirm={(amount) => {
+        handleWithdraw('LC', amount)
+      }}
+      tokenSymbol="CAKE"
+    />,
+  )
+
+  const [onPresentDepositFromWBNB] = useModal(
+    <AmountModal
+      title="Deposit from WBNB"
+      max={wbnbBalance}
+      onConfirm={(amount) => {
+        handleDeposit('WBNB', amount)
+      }}
+      tokenSymbol="WBNB"
+    />,
+  )
+
+  const [onPresentWithdrawToWBNB] = useModal(
+    <AmountModal
+      title="Withdraw to WBNB"
+      max={wbnbDiceBalance}
+      onConfirm={(amount) => {
+        handleWithdraw('WBNB', amount)
+      }}
+      tokenSymbol="CAKE"
+    />,
+  )
+
+  const [onPresentDepositFromBUSD] = useModal(
+    <AmountModal
+      title="Deposit from BUSD"
+      max={busdBalance}
+      onConfirm={(amount) => {
+        handleDeposit('BUSD', amount)
+      }}
+      tokenSymbol="BUSD"
+    />,
+  )
+
+  const [onPresentWithdrawToBUSD] = useModal(
+    <AmountModal
+      title="Withdraw to BUSD"
+      max={busdDiceBalance}
+      onConfirm={(amount) => {
+        handleWithdraw('BUSD', amount)
+      }}
+      tokenSymbol="CAKE"
+    />,
+  )
+
+  const [onPresentDepositFromBTCB] = useModal(
+    <AmountModal
+      title="Deposit from BTCB"
+      max={btcbBalance}
+      onConfirm={(amount) => {
+        handleDeposit('BTCB', amount)
+      }}
+      tokenSymbol="BTCB"
+    />,
+  )
+
+  const [onPresentWithdrawToBTCB] = useModal(
+    <AmountModal
+      title="Withdraw to BTCB"
+      max={btcbDiceBalance}
+      onConfirm={(amount) => {
+        handleWithdraw('BTCB', amount)
+      }}
+      tokenSymbol="CAKE"
+    />,
+  )
+
+  const [onPresentDepositFromETH] = useModal(
+    <AmountModal
+      title="Deposit from ETH"
+      max={ethBalance}
+      onConfirm={(amount) => {
+        handleDeposit('ETH', amount)
+      }}
+      tokenSymbol="ETH"
+    />,
+  )
+
+  const [onPresentWithdrawToETH] = useModal(
+    <AmountModal
+      title="Withdraw to ETH"
+      max={ethDiceBalance}
+      onConfirm={(amount) => {
+        handleWithdraw('ETH', amount)
+      }}
+      tokenSymbol="CAKE"
+    />,
+  )
 
   const config: Array<BankRowProps> = [{
+    address: getAddress(tokens['lc-dice'].address),
     stakingToken: tokens.lc,
-    earningToken: tokens.dice,
+    earningToken: tokens.cake,
     stakingBalance: BigNumber.from(0),
     earningBalance: BigNumber.from(0),
-    onDeposit: () => {
-      console.log('deposit from lc')
-    },
-    onWithdraw: () => {
-      console.log('withdraw to lc')
-    }
+    onDeposit: onPresentDepositFromLC,
+    onWithdraw: onPresentWithdrawToLC
   },{
+    address: getAddress(tokens['wbnb-dice'].address),
     stakingToken: tokens.wbnb,
-    earningToken: tokens.dice,
+    earningToken: tokens.cake,
     stakingBalance: BigNumber.from(0),
     earningBalance: BigNumber.from(0),
-    onDeposit: () => {
-      console.log('deposit from wbnb')
-    },
-    onWithdraw: () => {
-      console.log('withdraw to wbnb')
-    }
+    onDeposit: onPresentDepositFromWBNB,
+    onWithdraw: onPresentWithdrawToWBNB
   },{
+    address: getAddress(tokens['busd-dice'].address),
     stakingToken: tokens.busd,
-    earningToken: tokens.dice,
+    earningToken: tokens.cake,
     stakingBalance: BigNumber.from(0),
     earningBalance: BigNumber.from(0),
-    onDeposit: () => {
-      console.log('deposit from busd')
-    },
-    onWithdraw: () => {
-      console.log('withdraw to busd')
-    }
+    onDeposit: onPresentDepositFromBUSD,
+    onWithdraw: onPresentWithdrawToBUSD
   },{
+    address: getAddress(tokens['btcb-dice'].address),
     stakingToken: tokens.btcb,
-    earningToken: tokens.dice,
+    earningToken: tokens.cake,
     stakingBalance: BigNumber.from(0),
     earningBalance: BigNumber.from(0),
-    onDeposit: () => {
-      console.log('deposit from btcb')
-    },
-    onWithdraw: () => {
-      console.log('withdraw to btcb')
-    }
+    onDeposit: onPresentDepositFromBTCB,
+    onWithdraw: onPresentWithdrawToBTCB
   },{
+    address: getAddress(tokens['eth-dice'].address),
     stakingToken: tokens.eth,
-    earningToken: tokens.dice,
+    earningToken: tokens.cake,
     stakingBalance: BigNumber.from(0),
     earningBalance: BigNumber.from(0),
-    onDeposit: () => {
-      console.log('deposit from eth')
-    },
-    onWithdraw: () => {
-      console.log('withdraw to eth')
-    }
+    onDeposit: onPresentDepositFromETH,
+    onWithdraw: onPresentWithdrawToETH
   }]
   const [records, setRecords] = useState(config)
 
   useEffect(() => {
     async function fetchWBNB() {
-      const lcContract = getLcContract()
-      const lcBalance = await lcContract.balanceOf(account)
-      records[0].stakingBalance = lcBalance
-      const wbnbContract = getWbnbContract()
-      const wbnbBalance = await wbnbContract.balanceOf(account)
-      records[1].stakingBalance = wbnbBalance
-      const busdContract = getBusdContract()
-      const busdBalance = await busdContract.balanceOf(account)
-      records[2].stakingBalance = busdBalance
-      const btcbContract = getBtcbContract()
-      const btcbBalance = await btcbContract.balanceOf(account)
-      records[3].stakingBalance = btcbBalance
-      const ethContract = getEthContract()
-      const ethBalance = await ethContract.balanceOf(account)
-      records[4].stakingBalance = ethBalance
+      records[0].stakingBalance = BigNumber.from(lcBalance.toString())
+      records[1].stakingBalance = BigNumber.from(wbnbBalance.toString())
+      records[2].stakingBalance = BigNumber.from(busdBalance.toString())
+      records[3].stakingBalance = BigNumber.from(btcbBalance.toString())
+      records[4].stakingBalance = BigNumber.from(ethBalance.toString())
       setRecords(records)
     }
     fetchWBNB()

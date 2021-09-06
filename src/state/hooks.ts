@@ -195,7 +195,11 @@ export const usePollDiceData = () => {
     }
     timer.current = setInterval(() => {
       if (account) {
-        dispatch(fetchDice(account))
+        // dispatch(fetchDice('LC', account))
+        dispatch(fetchDice('WBNB', account))
+        // dispatch(fetchDice('BUSD', account))
+        // dispatch(fetchDice('BTCB', account))
+        // dispatch(fetchDice('ETH', account))
       }
     }, POLL_TIME_IN_SECONDS * 1000)
 

@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { getDiceContract } from 'utils/contractHelpers'
 import useRefresh from 'hooks/useRefresh'
 
-const usePaused = () => {
+const usePaused = (stakingSymbol: string) => {
   const { slowRefresh } = useRefresh()
   const [paused, setPaused] = useState(true)
 
   useEffect(() => {
     async function fetchPaused() {
       if (mounted) {
-        const diceContract = getDiceContract()
+        const diceContract = getDiceContract(stakingSymbol)
         const p = await diceContract.paused()
         console.log('paused', p)
         setPaused(p)
@@ -21,7 +21,7 @@ const usePaused = () => {
     return function cleanup() {
       mounted = false // don't update the state variable on an unmount component
     }
-  }, [slowRefresh])
+  }, [stakingSymbol, slowRefresh])
 
   return paused
 }

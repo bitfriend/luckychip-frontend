@@ -39,7 +39,7 @@ export const useWbnbContract = () => {
   return useMemo(() => getWbnbContract(library.getSigner()), [library])
 }
 
-export const useDiceContract = () => {
+export const useDiceContract = (stakingSymbol: string) => {
   const { library } = useActiveWeb3React()
-  return useMemo(() => getDiceContract(library.getSigner()), [library])
+  return useMemo(() => getDiceContract(stakingSymbol, library.getSigner()), [stakingSymbol, library])
 }

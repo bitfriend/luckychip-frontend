@@ -21,22 +21,16 @@ export const getMulticallAddress = () => {
 export const getMulticall2Address = () => {
   return getAddress(addresses.multiCall2)
 }
+export const getReferralAddress = () => {
+  return getAddress(addresses.referrals)
+}
+
 export const getLcAddress = () => {
   return getAddress(tokens.lc.address)
 }
 export const getWbnbAddress = () => {
   return getAddress(tokens.wbnb.address)
 }
-export const getReferralAddress = () => {
-  return getAddress(addresses.referrals)
-}
-export const getDiceAddress = () => {
-  return getAddress(addresses.dice)
-}
-export const getDiceTokenAddress = () => {
-  return getAddress(addresses.diceToken)
-}
-
 export const getBusdAddress = () => {
   return getAddress(tokens.busd.address)
 }
@@ -45,6 +39,13 @@ export const getBtcbAddress = () => {
 }
 export const getEthAddress = () => {
   return getAddress(tokens.eth.address)
+}
+
+export const getDiceAddress = (stakingSymbol: string) => {
+  return getAddress(addresses[`${stakingSymbol.toLowerCase()}-dice`])
+}
+export const getDiceTokenAddress = (stakingSymbol: string) => {
+  return getAddress(tokens[`${stakingSymbol.toLowerCase()}-dice`])
 }
 
 export const isAddress = (value: any): string | false => {
